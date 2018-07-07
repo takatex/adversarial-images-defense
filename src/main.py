@@ -30,11 +30,20 @@ def main():
     image_path = '../data/input_images/bird.JPEG'
     image = cv2.imread(image_path, 1)
     org_class = 13
-    target_class = 839
+    target_class = 0
 
     FGSM = FastGradientSignTargeted(alpha=0.01, output_dir=args.output_dir, n_iter=args.n_iter, aug=False)
     flg = FGSM.generate(image, org_class, target_class)
 
+
+    for image_path, org_class in datasets:
+        image = cv2.imread(image_path, 1)
+        target_class = np.random.randint(0, 1000)
+        flg = FGSM.generate(image, org_class, target_class)
+
+        if flg:
+        else:
+            pass
 
 if __name__ == '__main__':
     main()
