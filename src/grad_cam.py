@@ -8,7 +8,6 @@ import sys
 import numpy as np
 import argparse
 import matplotlib.pyplot as plt
-# from preprocess import preprocess_image
 
 class FeatureExtractor():
     """ Class for extracting activations and 
