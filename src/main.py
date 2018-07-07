@@ -29,12 +29,6 @@ def main():
     FGSM = FastGradientSignTargeted(alpha=0.01, output_dir=opt.output_dir, filter_=False)
     FGSM.generate(image, org_class, target_class)
 
-    # target_example = 0  # Apple
-    # (original_image, prep_img, org_class, _, pretrained_model) =\
-    #     get_params(target_example)
-    # target_class = 62  # Mud turtle
-    #
-
 
 if __name__ == '__main__':
     main()

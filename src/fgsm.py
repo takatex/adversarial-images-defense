@@ -12,10 +12,6 @@ from preprocess import *
 from utils import *
 
 class FastGradientSignTargeted(Classifier):
-    """
-        Fast gradient sign untargeted adversarial attack, maximizes the target class activation
-        with iterative grad sign updates
-    """
     def __init__(self, alpha, output_dir, filter_):
         super().__init__(filter_)
         self.alpha = alpha
