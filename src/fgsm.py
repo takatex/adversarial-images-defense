@@ -12,33 +12,31 @@ from preprocess import *
 
 class FastGradientSignTargeted(Classifier):
 
-    def __init__(self, alpha, output_dir, n_iter, aug):
+    def __init__(self, alpha, n_iter, aug, save, save_path):
         super().__init__()
         self.alpha = alpha
-        self.output_dir = output_dir
         self.n_iter = n_iter
         self.aug = aug
         self.labels = read_labels('../data/labels.json')
+        self.save = save
+        self.save_path = save_path
 
     def _classify(self, image):
         image = restore_image(image)
         out, _ = self.forward(image, self.aug)
 
         _, adv_class = out.data.max(1)
-        adv_class_confidence = nn.functional.softmax(out)[0][adv_class].data.numpy()[0]
+        adv_class_confidence = nn.functional.softmax(out, dim=1)[0][adv_class].data.numpy()[0]
         adv_class = adv_class.numpy()[0]
-        # print(f'org : {self.org_class}, target : {self.target_class}, out : {adv_class}')
-        # print(adv_class_confidence)
 
         if adv_class == self.target_class:
-            # print(f'Org {self.org_class}({self.labels[str(self.org_class)]})\n' \
-            #       f'Adv {adv_class}({self.labels[str(adv_class)]}) ({adv_class_confidence})')
-            noise_image = self.image_org - image
-            save_image(self.output_dir, self.org_class, self.target_class, noise_image, 'adv_noise')
-            save_image(self.output_dir, self.org_class, self.target_class, image, 'adv')
-            return 1
+            if self.save:
+                noise_image = self.image_org - image
+                save_image(self.save_path, self.org_class, self.target_class, noise_image, 'adv_noise')
+                save_image(self.save_path, self.org_class, self.target_class, image, 'adv')
+            return 1, adv_class_confidence
         else:
-            return 0
+            return 0, adv_class_confidence
 
     def generate(self, image, org_class, target_class):
         self.image_org = image
@@ -56,9 +54,11 @@ class FastGradientSignTargeted(Classifier):
             noise = self.alpha * torch.sign(image.grad.data)
             image.data = image.data - noise
 
-            flg = self._classify(image)
+            flg, adv_class_confidence = self._classify(image)
             if flg:
+                image = restore_image(image)
                 break
+
             image = restore_image(image)
 
-        return flg
+        return flg, image, adv_class_confidence

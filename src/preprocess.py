@@ -13,18 +13,20 @@ class Augmenter(object):
 
     def __init__(self):
         self.seq = iaa.Sequential([
-            iaa.SomeOf(3, [
+            iaa.SomeOf((2, 3), [
                 iaa.Superpixels(p_replace=0.5, n_segments=100),
                 iaa.GaussianBlur(0, 2.0),
                 iaa.BilateralBlur(5, sigma_color=250, sigma_space=250),
                 iaa.Sharpen(alpha=1),
                 iaa.Emboss(alpha=1),
-                iaa.AdditiveGaussianNoise(scale = 0.1 * 255)
-            ])
-        ], random_order=True)
+                iaa.AdditiveGaussianNoise(scale = 0.1 * 255),
+                iaa.ElasticTransformation(alpha=(0.5, 3.5), sigma=0.25),
+                iaa.ContrastNormalization((0.5, 2.0))
+            ], random_order=True)
+        ])
 
     def get_aug_image(self, image):
-        return seq.augment_image(image)
+        return self.seq.augment_image(image)
 
 
 class PreprocessImage(Augmenter):

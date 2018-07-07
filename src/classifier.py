@@ -16,7 +16,6 @@ class Classifier(PreprocessImage):
 
     def __init__(self):
         super().__init__()
-        print('Loading vgg16 ...')
         self.model = models.vgg16(pretrained=True)
         self.model.eval()
 
@@ -26,13 +25,13 @@ class Classifier(PreprocessImage):
 
         return out, image
 
-    def ensemble_classify(image):
+    def ensemble_classify(self, image, n_iter):
         conf = np.zeros([1000])
-        for _ in range(100):
+        for _ in range(n_iter):
             out, _ = self.forward(image, aug=True)
-            _, label = out.data.max(1)
-            label = label.numpy()[0]
-            conf += nn.functional.softmax(out)[0].data.numpy()
+            # _, label = out.data.max(1)
+            # label = label.numpy()[0]
+            conf += nn.functional.softmax(out, dim=1)[0].data.numpy()
 
-        pred = np.where(conf == max(conf))[0][0]
-        return pred
+        out = np.where(conf == max(conf))[0][0]
+        return out
