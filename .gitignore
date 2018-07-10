@@ -1,9 +1,12 @@
+*.i
 .DS_Store
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+*.ipynb
+grad_cam.py
 
 # C extensions
 *.so
