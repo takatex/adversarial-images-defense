@@ -23,7 +23,7 @@ parser.add_argument('-i', '--input_dir', type=str, default='../data/inputs',
                     help='input images directory')
 parser.add_argument('-o', '--output_dir', type=str, default='../data/outputs',
                     help='output images directory')
-parser.add_argument('-s', '--save_adv_image', action='store_true', default=False,
+parser.add_argument('-s', '--save_adv_image', action='store_true', default=True,
                     help='save adv images')
 
 args = parser.parse_args()
@@ -51,37 +51,23 @@ def main():
     count = 0
     for i, (image_path, org_class) in enumerate(dataset):
         image = cv2.imread(os.path.join(args.input_dir, image_path), 1)
-
-        out_1, _ = C.forward(image, False)
-        _, normal_pred_1 = out_1.data.max(1)
-        normal_pred_1 = normal_pred_1.numpy()[0]
-
-        normal_pred_2 = C.ensemble_classify(image, args.n_iter_aug)
-        # _, normal_pred = out.data.max(1)
-        # normal_pred = normal_pred.numpy()[0]
         org_class = int(org_class)
+        target_class = np.random.randint(0, 1000)
 
-        outs.append([org_class, normal_pred_1, normal_pred_2])
+        out_normal = C.ensemble_classify(image, args.n_iter_aug)
 
-        correct += int(normal_pred_2 == org_class)
-        count = (i + 1)
+        flg, image, adv_class_confidence = FGSM.generate(image, org_class, target_class)
 
-        # org_class = int(org_class)
-        # target_class = np.random.randint(0, 1000)
-        # flg, image, adv_class_confidence = FGSM.generate(image, org_class, target_class)
-        #
-        # if flg:
-        #     out = C.ensemble_classify(image, args.n_iter_aug)
-        #     correct += int(out == org_class)
-        #     outs.append([out, org_class, target_class, adv_class_confidence, normal_pred])
-        #     count += 1
-        # else:
-        #     pass
+        if flg:
+            out_adv = C.ensemble_classify(image, args.n_iter_aug)
+            correct += int(out_adv == org_class)
+            outs.append([out_normal, out_adv, org_class, target_class, adv_class_confidence])
+            count += 1
+        else:
+            pass
         show_progress(i+1, args.test_size, count, (correct / count))
 
-
     np.savetxt(os.path.join(args.output_dir, 'log.txt'), np.array(outs))
-
 
 if __name__ == '__main__':
     main()
