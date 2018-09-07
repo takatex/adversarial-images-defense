@@ -7,7 +7,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.ipynb
-grad_cam.py
 
 # C extensions
 *.so
